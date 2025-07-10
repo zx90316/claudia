@@ -17,9 +17,11 @@
  * Version can be specified via:
  *   - CLI argument: --version=1.0.41 (defaults to 1.0.41 if not specified)
  */
+const fs = require('fs');
+const path = require('path');
 
 import { spawn } from 'child_process';
-import { mkdir, rm, readdir, copyFile, access } from 'fs/promises';
+import { mkdir, rm, readdir, copyFile, access, cp } from 'fs/promises'; // <-- 確認或加入 cp
 import { existsSync } from 'fs';
 import { join, resolve } from 'path';
 
@@ -208,7 +210,7 @@ async function copyRequiredFiles(packageDir) {
       }
       
       // Copy directory recursively using cp command
-      await runCommand('cp', ['-r', srcPath, destPath]);
+      await cp(srcPath, destPath, { recursive: true });
     } else {
       console.warn(`Warning: ${dir}/ directory not found in package`);
     }

@@ -191,6 +191,10 @@ Before building Claudia from source, ensure you have the following installed:
 4. **Claude Code CLI**
    - Download and install from [Claude's official site](https://claude.ai/code)
    - Ensure `claude` is available in your PATH
+   
+   **windows**
+   使用下方說明安裝Claude Code
+   https://github.com/somersby10ml/win-claude-code
 
 #### Platform-Specific Dependencies
 
@@ -310,6 +314,9 @@ After building, you can verify the application works:
 
 # Windows
 ./src-tauri/target/release/claudia.exe
+需要增加環境變數
+SHELL
+C:\Program Files\Git\bin\bash.exe
 ```
 
 ### Build Artifacts
