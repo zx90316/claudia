@@ -173,12 +173,19 @@ Before building Claudia from source, ensure you have the following installed:
    # Install via rustup
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
    ```
+   **windows**
+   https://www.rust-lang.org/zh-TW/learn/get-started
 
 2. **Bun** (latest version)
    ```bash
    # Install bun
    curl -fsSL https://bun.sh/install | bash
    ```
+   **windows**
+   ''''bash
+   powershell -c "irm bun.sh/install.ps1 | iex"
+   '''
+
 
 3. **Git**
    ```bash
