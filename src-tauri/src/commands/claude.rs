@@ -257,10 +257,25 @@ fn create_command_with_env(program: &str) -> Command {
             let current_path = std::env::var("PATH").unwrap_or_default();
             let node_bin_str = node_bin_dir.to_string_lossy();
             if !current_path.contains(&node_bin_str.as_ref()) {
-                let new_path = format!("{}:{}", node_bin_str, current_path);
+                // Use correct path separator for the platform
+                let separator = if cfg!(target_os = "windows") { ";" } else { ":" };
+                let new_path = format!("{}{}{}", node_bin_str, separator, current_path);
                 tokio_cmd.env("PATH", new_path);
             }
         }
+    }
+
+    // Windows-specific environment setup for shell commands
+    #[cfg(target_os = "windows")]
+    {
+        // Ensure SHELL variable is set for bash-based tools
+        if let Ok(shell_value) = std::env::var("SHELL") {
+            tokio_cmd.env("SHELL", shell_value);
+        }
+        
+        // Set MSYS environment variables for better compatibility with Unix tools
+        tokio_cmd.env("MSYS", "winsymlinks:nativestrict");
+        tokio_cmd.env("MSYS2_ARG_CONV_EXCL", "*");
     }
 
     tokio_cmd

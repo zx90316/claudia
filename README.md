@@ -321,9 +321,34 @@ After building, you can verify the application works:
 
 # Windows
 ./src-tauri/target/release/claudia.exe
-需要增加環境變數
-SHELL
-C:\Program Files\Git\bin\bash.exe
+
+# Windows 環境設定
+為了確保 grep 和其他 Unix 工具在 Windows 環境下正常運作，需要設定以下環境變數：
+
+## 必要的環境變數設定
+1. **SHELL** 環境變數：
+   ```
+   SHELL=C:\Program Files\Git\bin\bash.exe
+   ```
+
+2. **PATH** 環境變數（確保包含 Git 工具路徑）：
+   ```
+   PATH=C:\Program Files\Git\bin;%PATH%
+   ```
+
+## 設定步驟
+1. 開啟「系統內容」→「進階系統設定」→「環境變數」
+2. 在「系統變數」或「使用者變數」中新增或編輯以下變數：
+   - 變數名稱：`SHELL`
+   - 變數值：`C:\Program Files\Git\bin\bash.exe`
+3. 確保 PATH 中包含 Git 的 bin 目錄
+4. 重新啟動應用程式以載入新的環境變數
+
+## 故障排除
+如果 grep 功能仍然無法正常運作，請檢查：
+- Git for Windows 是否正確安裝
+- SHELL 環境變數路徑是否正確指向 bash.exe
+- 應用程式是否在設定環境變數後重新啟動
 ```
 
 ### Build Artifacts

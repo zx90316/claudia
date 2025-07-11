@@ -1998,18 +1998,30 @@ fn create_command_with_env(program: &str) -> Command {
         }
     }
 
-    // Ensure PATH contains common Homebrew locations
+    // Ensure PATH contains common system locations
     if let Ok(existing_path) = std::env::var("PATH") {
-        let mut paths: Vec<&str> = existing_path.split(':').collect();
-        for p in ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin"].iter() {
+        // Use correct path separator for the platform
+        let separator = if cfg!(target_os = "windows") { ";" } else { ":" };
+        let mut paths: Vec<&str> = existing_path.split(separator).collect();
+        
+        // Add common binary locations based on platform
+        #[cfg(not(target_os = "windows"))]
+        let common_paths = ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin"];
+        #[cfg(target_os = "windows")]
+        let common_paths = ["C:\\Windows\\System32", "C:\\Windows"];
+        
+        for p in common_paths.iter() {
             if !paths.contains(p) {
                 paths.push(p);
             }
         }
-        let joined = paths.join(":");
+        let joined = paths.join(separator);
         tokio_cmd.env("PATH", joined);
     } else {
+        #[cfg(not(target_os = "windows"))]
         tokio_cmd.env("PATH", "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin");
+        #[cfg(target_os = "windows")]
+        tokio_cmd.env("PATH", "C:\\Windows\\System32;C:\\Windows");
     }
 
     // BEGIN PATCH: Ensure bundled sidecar directory is in PATH when using the "claude-code" placeholder
@@ -2029,6 +2041,19 @@ fn create_command_with_env(program: &str) -> Command {
                 }
             }
         }
+    }
+    
+    // Windows-specific environment setup for shell commands
+    #[cfg(target_os = "windows")]
+    {
+        // Ensure SHELL variable is set for bash-based tools
+        if let Ok(shell_value) = std::env::var("SHELL") {
+            tokio_cmd.env("SHELL", shell_value);
+        }
+        
+        // Set MSYS environment variables for better compatibility with Unix tools
+        tokio_cmd.env("MSYS", "winsymlinks:nativestrict");
+        tokio_cmd.env("MSYS2_ARG_CONV_EXCL", "*");
     }
     // END PATCH
 

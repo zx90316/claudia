@@ -538,9 +538,40 @@ pub fn create_command_with_env(program: &str) -> Command {
             let current_path = std::env::var("PATH").unwrap_or_default();
             let node_bin_str = node_bin_dir.to_string_lossy();
             if !current_path.contains(&node_bin_str.as_ref()) {
-                let new_path = format!("{}:{}", node_bin_str, current_path);
+                // Use correct path separator for the platform
+                let separator = if cfg!(target_os = "windows") { ";" } else { ":" };
+                let new_path = format!("{}{}{}", node_bin_str, separator, current_path);
                 debug!("Adding NVM bin directory to PATH: {}", node_bin_str);
                 cmd.env("PATH", new_path);
+            }
+        }
+    }
+
+    // Windows-specific environment setup for shell commands
+    #[cfg(target_os = "windows")]
+    {
+        // Ensure SHELL variable is set for bash-based tools
+        if let Ok(shell_value) = std::env::var("SHELL") {
+            debug!("Setting SHELL environment variable: {}", shell_value);
+            cmd.env("SHELL", shell_value);
+        }
+        
+        // Set MSYS environment variables for better compatibility with Unix tools
+        cmd.env("MSYS", "winsymlinks:nativestrict");
+        cmd.env("MSYS2_ARG_CONV_EXCL", "*");
+        
+        // Ensure Git Bash paths are included if SHELL points to bash
+        if let Ok(shell_path) = std::env::var("SHELL") {
+            if shell_path.contains("bash.exe") {
+                if let Some(git_dir) = std::path::Path::new(&shell_path).parent() {
+                    let current_path = std::env::var("PATH").unwrap_or_default();
+                    let git_bin_str = git_dir.to_string_lossy();
+                    if !current_path.contains(&git_bin_str.as_ref()) {
+                        let new_path = format!("{};{}", git_bin_str, current_path);
+                        debug!("Adding Git bin directory to PATH: {}", git_bin_str);
+                        cmd.env("PATH", new_path);
+                    }
+                }
             }
         }
     }
